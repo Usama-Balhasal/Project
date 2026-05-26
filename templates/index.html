@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Start – Hållbarhetskollen{% endblock %}
+
+{% block content %}
+<!-- Hero-sektion -->
+<section class="hero">
+  <div class="hero__icon">🌍</div>
+  <h1>Hållbarhetskollen</h1>
+  <p>Logga dina vardagsaktiviteter och få en tydlig bild av din klimatpåverkan i CO₂e per vecka.</p>
+  <div class="hero__actions">
+    <a href="/ui/activities" class="btn btn-primary" id="btn-log-activity">📋 Logga aktivitet</a>
+    <a href="/ui/reports/weekly" class="btn btn-secondary" id="btn-view-report">📊 Se veckorapport</a>
+  </div>
+</section>
+
+<!-- Snabbguide-kort -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-card__icon">👤</div>
+    <div class="stat-card__value">1</div>
+    <div class="stat-card__label">Skapa ett konto</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__icon">🚗</div>
+    <div class="stat-card__value">2</div>
+    <div class="stat-card__label">Logga dina aktiviteter</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card__icon">📊</div>
+    <div class="stat-card__value">3</div>
+    <div class="stat-card__label">Se din klimatpåverkan</div>
+  </div>
+</div>
+
+<!-- Info-sektion -->
+<div class="card">
+  <div class="card__title">🌿 Om Hållbarhetskollen</div>
+  <p style="color:var(--color-text-muted); line-height:1.8;">
+    Hållbarhetskollen hjälper dig att förstå din klimatpåverkan i vardagen.
+    Varje aktivitet – oavsett om det är en bilresa, en köttmåltid eller energiförbrukning
+    hemma – omvandlas till kilo CO₂e (koldioxidekvivalenter) baserat på
+    vetenskapligt fastställda emissionsfaktorer.
+  </p>
+  <br>
+  <p style="color:var(--color-text-muted); line-height:1.8;">
+    <strong>Kategorier:</strong> 🚗 Transport &nbsp;·&nbsp; 🥩 Mat &nbsp;·&nbsp; ⚡ Energi
+  </p>
+  <br>
+  <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+    <a href="/ui/users" class="btn btn-secondary" id="btn-manage-users">👤 Hantera användare</a>
+    <a href="/docs" class="btn btn-secondary" id="btn-api-docs" target="_blank">🔗 API-dokumentation</a>
+  </div>
+</div>
+{% endblock %}

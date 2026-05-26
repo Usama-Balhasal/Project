@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Användare – Hållbarhetskollen{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>👤 Användarhantering</h1>
+  <p>Skapa, lista och ta bort användare i systemet.</p>
+</div>
+
+<!-- Statusmeddelanden -->
+{% if ok %}
+<div class="alert alert-success" role="alert">✅ {{ ok }}</div>
+{% endif %}
+{% if err %}
+<div class="alert alert-error" role="alert">❌ {{ err }}</div>
+{% endif %}
+
+<!-- Formulär: Skapa ny användare -->
+<div class="card">
+  <div class="card__title">➕ Skapa ny användare</div>
+  <form method="post" action="/ui/users" id="form-create-user" novalidate>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="name">Namn *</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="T.ex. Anna Svensson"
+          required
+          minlength="1"
+          maxlength="100"
+          autocomplete="name"
+        />
+      </div>
+      <div class="form-group">
+        <label for="email">E-postadress *</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="T.ex. anna@exempel.se"
+          required
+          maxlength="200"
+          autocomplete="email"
+        />
+      </div>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary" id="btn-submit-user">
+      ➕ Skapa användare
+    </button>
+  </form>
+</div>
+
+<!-- Tabell: Lista användare -->
+<div class="card">
+  <div class="card__title">📋 Registrerade användare ({{ users | length }})</div>
+
+  {% if users %}
+  <div class="table-wrapper">
+    <table id="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Namn</th>
+          <th>E-postadress</th>
+          <th>Åtgärder</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr id="user-row-{{ user.id }}">
+          <td><span class="badge badge-green">#{{ user.id }}</span></td>
+          <td><strong>{{ user.name }}</strong></td>
+          <td>{{ user.email }}</td>
+          <td>
+            <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+              <a href="/ui/activities?user_id={{ user.id }}"
+                 class="btn btn-secondary btn-sm"
+                 id="btn-activities-{{ user.id }}">
+                📋 Aktiviteter
+              </a>
+              <form method="post"
+                    action="/ui/users/{{ user.id }}/delete"
+                    onsubmit="return confirm('Ta bort {{ user.name }}? Alla aktiviteter raderas också.');"
+                    style="display:inline;">
+                <button type="submit"
+                        class="btn btn-danger btn-sm"
+                        id="btn-delete-{{ user.id }}">
+                  🗑 Ta bort
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state__icon">👤</div>
+    <p>Inga användare registrerade ännu. Skapa den första ovan!</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /* Klientvalidering: hindrar tomma formulär från att skickas */
+  document.getElementById('form-create-user').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    if (!name) {
+      e.preventDefault();
+      alert('Namn är obligatoriskt.');
+      document.getElementById('name').focus();
+      return;
+    }
+    if (!email || !email.includes('@')) {
+      e.preventDefault();
+      alert('Ange en giltig e-postadress.');
+      document.getElementById('email').focus();
+      return;
+    }
+  });
+</script>
+{% endblock %}

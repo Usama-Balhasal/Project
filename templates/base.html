@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!--
+  templates/base.html
+  Gemensam grundlayout som alla andra templates ärver via Jinja2 "extends".
+  Definierar: <head> med CSS, navbar med navigation, och block "content".
+-->
+<html lang="sv">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Hållbarhetskollen – logga dina aktiviteter och se din klimatpåverkan i CO₂e per vecka." />
+  <title>{% block title %}Hållbarhetskollen{% endblock %}</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+</head>
+
+<body>
+
+  <!-- ── Navigation ──────────────────────────────────────────────────────── -->
+  <nav class="navbar" role="navigation" aria-label="Huvudnavigation">
+    <a href="/" class="navbar__brand">
+      <span class="navbar__brand-icon">🌱</span>
+      Hållbarhetskollen
+    </a>
+    <ul class="navbar__links">
+      <li>
+        <a href="/" {% if request.url.path=="/" %}class="active" {% endif %}>
+          Start
+        </a>
+      </li>
+      <li>
+        <a href="/ui/users" {% if request.url.path=="/ui/users" %}class="active" {% endif %}>
+          Användare
+        </a>
+      </li>
+      <li>
+        <a href="/ui/activities" {% if request.url.path=="/ui/activities" %}class="active" {% endif %}>
+          Aktiviteter
+        </a>
+      </li>
+      <li>
+        <a href="/ui/reports/weekly" {% if request.url.path=="/ui/reports/weekly" %}class="active" {% endif %}>
+          Veckorapport
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- ── Sidinnehåll ─────────────────────────────────────────────────────── -->
+  <main class="container" role="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── Footer ──────────────────────────────────────────────────────────── -->
+  <footer
+    style="text-align:center; padding: 1.5rem; color: var(--color-text-light); font-size:.82rem; margin-top:2rem; border-top: 1px solid #ddeee5;">
+    🌍 Hållbarhetskollen &nbsp;·&nbsp; Gävle kommun VT2026 &nbsp;·&nbsp;
+    Team: Usama · Fani · Lukas · Nicklas
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>

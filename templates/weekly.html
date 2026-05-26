@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Veckorapport – Hållbarhetskollen{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📊 Veckorapport</h1>
+  <p>Välj användare och veckostart för att se total klimatpåverkan i CO₂e.</p>
+</div>
+
+<!-- Felmeddelande -->
+{% if err %}
+<div class="alert alert-error" role="alert">❌ {{ err }}</div>
+{% endif %}
+
+<!-- Formulär: välj användare + vecka -->
+<div class="card">
+  <div class="card__title">🔍 Välj period</div>
+  <form method="get" action="/ui/reports/weekly" id="form-weekly-report" novalidate>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="report-user">Användare *</label>
+        <select id="report-user" name="user_id" required>
+          <option value="">-- Välj användare --</option>
+          {% for user in users %}
+          <option value="{{ user.id }}"
+            {% if selected_user and selected_user.id == user.id %}selected{% endif %}>
+            {{ user.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="week_start">Veckostart (måndag) *</label>
+        <input
+          type="date"
+          id="week_start"
+          name="week_start"
+          value="{{ week_start or '' }}"
+          required
+        />
+      </div>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary" id="btn-show-report">📊 Visa rapport</button>
+  </form>
+</div>
+
+<!-- Resultat -->
+{% if total_co2e is not none %}
+<div class="card">
+  <div class="card__title">
+    📅 Rapport: {{ selected_user.name }}
+    &nbsp;·&nbsp;
+    {{ week_start }} → {{ week_end }}
+  </div>
+
+  <!-- Total CO₂e -->
+  <div class="report-total">
+    <div class="report-total__label">Total klimatpåverkan för veckan</div>
+    <div class="report-total__value">{{ "%.2f"|format(total_co2e) }}</div>
+    <div class="report-total__unit">kg CO₂e</div>
+  </div>
+
+  <!-- Jämförelse-info -->
+  {% if total_co2e > 0 %}
+  <div class="alert {% if total_co2e < 50 %}alert-success{% elif total_co2e < 150 %}alert-warning{% else %}alert-error{% endif %}"
+       style="margin-bottom:1.5rem;">
+    {% if total_co2e < 50 %}
+      🌿 Utmärkt! Din klimatpåverkan denna vecka är låg.
+    {% elif total_co2e < 150 %}
+      🌡️ Medel. Det finns utrymme för förbättringar.
+    {% else %}
+      ⚠️ Hög klimatpåverkan. Funderar på hur du kan minska din CO₂e.
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Aktivitetstabell för veckan -->
+  {% if activities %}
+  <div class="table-wrapper">
+    <table id="weekly-activities-table">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Kategori</th>
+          <th>Aktivitet</th>
+          <th>Mängd</th>
+          <th>CO₂e (kg)</th>
+          <th>Andel</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for act in activities %}
+        <tr>
+          <td>{{ act.date }}</td>
+          <td>
+            {% if act.category == "transport" %}🚗
+            {% elif act.category == "mat" %}🥩
+            {% elif act.category == "energi" %}⚡
+            {% endif %}
+            {{ act.category | capitalize }}
+          </td>
+          <td>{{ act.key | capitalize }}</td>
+          <td>{{ act.amount }}</td>
+          <td>
+            {% if act.co2e > 5 %}
+            <span class="badge badge-red">{{ "%.2f"|format(act.co2e) }}</span>
+            {% elif act.co2e > 1 %}
+            <span class="badge badge-yellow">{{ "%.2f"|format(act.co2e) }}</span>
+            {% else %}
+            <span class="badge badge-green">{{ "%.2f"|format(act.co2e) }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if total_co2e > 0 %}
+              {{ "%.0f"|format((act.co2e / total_co2e) * 100) }}%
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:700; background:var(--color-surface-alt);">
+          <td colspan="4" style="padding:.75rem 1rem;">Totalt</td>
+          <td style="padding:.75rem 1rem;">{{ "%.2f"|format(total_co2e) }} kg</td>
+          <td style="padding:.75rem 1rem;">100%</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state__icon">📋</div>
+    <p>Inga aktiviteter loggade för denna vecka.</p>
+  </div>
+  {% endif %}
+
+  <!-- API-länk -->
+  <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e4efe8;">
+    <p style="font-size:.85rem; color:var(--color-text-muted);">
+      📡 <strong>API:</strong>
+      <a href="/reports/weekly?user_id={{ selected_user.id }}&week_start={{ week_start }}"
+         target="_blank"
+         style="color:var(--color-primary);">
+        GET /reports/weekly?user_id={{ selected_user.id }}&amp;week_start={{ week_start }}
+      </a>
+    </p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Tips -->
+{% if not selected_user %}
+<div class="card">
+  <div class="card__title">💡 Tips</div>
+  <ul style="list-style:none; display:flex; flex-direction:column; gap:.75rem; color:var(--color-text-muted);">
+    <li>🗓️ Välj alltid en <strong>måndag</strong> som veckostart för korrekt veckoavgränsning.</li>
+    <li>🚗 En bilresa på 50 km genererar ca <strong>10.5 kg CO₂e</strong>.</li>
+    <li>🥩 Ett kilo nötkött genererar ca <strong>26.5 kg CO₂e</strong>.</li>
+    <li>⚡ 100 kWh el (Sverige) genererar ca <strong>1.5 kg CO₂e</strong>.</li>
+  </ul>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /* Klientvalidering för veckorapporten */
+  document.getElementById('form-weekly-report').addEventListener('submit', function(e) {
+    const userId    = document.getElementById('report-user').value;
+    const weekStart = document.getElementById('week_start').value;
+    if (!userId) { e.preventDefault(); alert('Välj en användare.'); return; }
+    if (!weekStart) { e.preventDefault(); alert('Ange ett startdatum.'); return; }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,418 @@
+﻿================================================================
+  PROJEKTANTECKNINGAR - Hållbarhetskollen
+  Kurs: Projektmetodik inom IT, gmc VT2026
+  Ansvariga: Usama och Fani
+  Startdatum: 2026-05-21
+  Slutdatum:  2026-05-25
+================================================================
+
+Det här är vår gemensamma projektlogg. Vi skriver ner vad vi
+gjort, vilka problem vi stött på, hur vi löst dem och vilka
+beslut vi tagit dag för dag. Tanken är att det ska vara enkelt
+att följa hur projektet vuxit fram från grunden.
+
+Usama har haft huvudansvaret för all backendlogik: routes,
+databaskoppling, modeller och tester.
+Fani har haft huvudansvaret för HTML-templates, CSS och
+användarupplevelsen.
+
+I praktiken har vi hjälpt varandra när någon kört fast.
+
+================================================================
+  DAG 1 - 2026-05-21 (Torsdag): Projektstart och grundstruktur
+================================================================
+
+Första dagen. Vi gick igenom uppgiftsbeskrivningen ordentligt
+och bestämde oss för att sikta på betyget VG. Det är lite mer
+jobb, men vi kände att det är värt det.
+
+Vi delade upp ansvaret:
+- Usama: Backend, databas, routes (main.py, db.py, models.py)
+- Fani: Frontend, HTML-templates, CSS och layout
+
+----------------------------------------------------------------
+VAD VI GJORDE:
+----------------------------------------------------------------
+
+Vi satte upp Git-repot och la till en .gitignore från början
+så att app.db och __pycache__ inte följer med i versionshistoriken.
+
+Usama skapade hela mappstrukturen från grunden:
+  app/       -> Python-paketet med all serverlogik
+  templates/ -> HTML-sidor med Jinja2
+  static/    -> CSS och statiska filer
+  tests/     -> Alla tester
+
+Vi skrev requirements.txt tillsammans med alla beroenden:
+  fastapi, uvicorn, sqlalchemy, jinja2, pytest, httpx
+
+Usama skapade app/db.py som hanterar databaskopplingen.
+Filen sätter upp SQLAlchemy-motorn mot SQLite (app.db),
+skapar en SessionLocal-fabrik och en get_session-funktion
+som fungerar som en dependency i FastAPI.
+
+Usama skapade app/models.py med tre databastabeller:
+  - User (id, name, email)
+  - EmissionFactor (id, category, key, factor, unit)
+  - Activity (id, user_id, category, key, amount, date, co2e)
+
+----------------------------------------------------------------
+PROBLEM:
+----------------------------------------------------------------
+
+Problem: Servern startade inte från rätt katalog
+Usama hade i början svårt att starta servern korrekt. Felet
+var att uvicorn kördes från fel katalog, vilket gjorde att
+Python inte hittade modulerna i app/-paketet.
+
+Lösning: Vi bestämde oss för att alltid starta från projektets
+rotmapp med kommandot:
+  python -m uvicorn app.main:app --reload
+
+----------------------------------------------------------------
+BESLUT:
+----------------------------------------------------------------
+
+Beslut: base.html med Jinja2 extends
+Vi ville inte upprepa navigation och CSS på varje sida. Fani
+föreslog att vi använder base.html som en gemensam layout som
+alla andra sidor ärver ifrån via Jinja2 "extends". Alla sidor
+ser då enhetliga ut och vi ändrar designen på ett ställe.
+
+Beslut: Separat testdatabas
+Vi bestämde oss tidigt för att tester ska använda en separat
+in-memory SQLite-databas via conftest.py, så att testerna
+aldrig påverkar produktionsdatabasen.
+
+Beslut: email-fält på User-modellen
+Vi lade till ett email-fält på User-modellen för en mer
+realistisk datamodell och för att kunna identifiera användare
+unikt (email måste vara unikt i databasen).
+
+
+================================================================
+  DAG 2 - 2026-05-22 (Fredag): Användarhantering
+================================================================
+
+Dag två. Fokus idag: få igenom hela användarhanteringen,
+både backend och frontend. Vi ville ha någonting konkret att
+visa i webbläsaren i slutet av dagen.
+
+----------------------------------------------------------------
+VAD VI GJORDE:
+----------------------------------------------------------------
+
+Usama skapade app/schemas.py med Pydantic-scheman. Scheman
+används både för att validera inkommande data och för att
+forma JSON-svaren från API-et.
+
+Usama implementerade routes för användarhantering i main.py:
+  - GET  /ui/users              (visa alla användare + formulär)
+  - POST /ui/users              (skapa ny användare)
+  - POST /ui/users/{id}/delete  (ta bort användare)
+
+Fani skapade templates/base.html med navbar och footer.
+Det är den gemensamma layoutfilen som alla andra sidor ärver.
+
+Fani skapade templates/users.html med:
+  - Formulär för att skapa ny användare
+  - Tabell som visar alla användare
+  - Knapp per rad för att ta bort
+  - JavaScript-validering i formuläret
+
+Fani påbörjade även static/styles.css med en grön design,
+CSS-variabler och responsiv layout.
+
+----------------------------------------------------------------
+PROBLEM:
+----------------------------------------------------------------
+
+Problem: UnicodeEncodeError i seed_data.py (Fani)
+Fani fick ett konstigt kraschfel när han körde seed_data.py
+på Windows. Terminalen kraschade med UnicodeEncodeError.
+
+Orsaken var att vi hade emoji-tecken (såna som checkmarks och
+kryss) i print()-satser, och Windows standardterminal klarar
+inte UTF-8-output för emoji.
+
+Lösning: Fani bytte ut alla emoji mot vanlig ASCII-text,
+dvs [OK] och [FEL] i alla print()-anrop. Snabb fix!
+
+Problem: DeprecationWarning i templates
+Vi fick varningar om att TemplateResponse-anropen var
+föråldrade. Det handlade om att vi hade fel ordning på
+parametrarna.
+
+Lösning: Usama fixade det genom att byta ordning enligt den
+nya Starlette-APIn. Request-objektet ska nu vara det första
+argumentet, inte template-namnet. Tog tio minuter att hitta
+i dokumentationen.
+
+----------------------------------------------------------------
+BESLUT:
+----------------------------------------------------------------
+
+Beslut: Post-Redirect-Get (PRG) i alla formulär
+Usama implementerade PRG-mönster för användarformuläret.
+Det innebär att efter en lyckad POST-request sker en redirect
+till GET-sidan med ett ok- eller err-meddelande i URL:en.
+På så sätt undviker vi att formuläret skickas in igen om
+användaren uppdaterar webbläsaren. Det är god praxis.
+
+
+================================================================
+  DAG 3 - 2026-05-23 (Lördag): Aktivitetsloggning och VG-krav
+================================================================
+
+Tredje dagen och vi tacklade det roligaste och svåraste kravet:
+aktivitetsloggning med dynamiska dropdowns. Det här är VG-biten.
+
+----------------------------------------------------------------
+VAD VI GJORDE:
+----------------------------------------------------------------
+
+Usama implementerade routes för aktiviteter i main.py:
+  - GET  /ui/activities  (visa formulär och lista)
+  - POST /ui/activities  (ta emot formulär, beräkna och spara)
+
+Usama lade till en extra API-endpoint:
+  - GET /api/emission-factors  (returnerar alla faktorer som JSON)
+
+Den här endpointen används av JavaScript på aktivitetssidan
+för att fylla dropdowns dynamiskt baserat på databasens innehåll.
+
+Fani skapade templates/activities.html med:
+  - Dropdown för att välja användare
+  - Dynamisk kategori-dropdown (hämtar data från /api/emission-factors)
+  - Dynamisk nyckel-dropdown (uppdateras när man väljer kategori)
+  - Datumväljare med dagens datum förifyllt
+  - Realtids-förhandsgranskning av CO2e (visar resultatet innan man sparar)
+
+----------------------------------------------------------------
+PROBLEM:
+----------------------------------------------------------------
+
+Inga större problem idag. Fani hade lite problem med att få
+JavaScript-dropdowns att uppdateras i rätt ordning, men det
+löste sig när vi tittade på det tillsammans och justerade
+event-lyssnarna.
+
+----------------------------------------------------------------
+BESLUT:
+----------------------------------------------------------------
+
+Beslut: CO2e beräknas och sparas direkt i Activity-tabellen
+Usama förklarade att det finns två sätt att lagra CO2e:
+antingen räkna ut det varje gång i rapporten (join-beräkning),
+eller räkna ut det en gång och spara resultatet direkt.
+
+Vi valde att spara CO2e direkt i Activity-tabellen när
+aktiviteten loggas. Det gör att veckorapporten bara behöver
+summera ett fält, utan att göra om hela beräkningen.
+
+Beslut: /api/emission-factors för dynamiska dropdowns (VG)
+För att uppfylla VG-kravet om att kategori och nyckel ska
+väljas från listor (inte skrivas in som fritext) behövde vi
+ett sätt för JavaScript att hämta data från databasen.
+Usama skapade en dedikerad JSON-endpoint för detta.
+
+
+================================================================
+  DAG 4 - 2026-05-24 (Söndag): Veckorapport och testdata
+================================================================
+
+Dag fyra. Veckorapporten stod på tur, både som HTML-sida
+och som JSON-API. Vi ville också kunna testa med riktig data
+från databasen, så Usama satte ihop seed_data.py.
+
+----------------------------------------------------------------
+VAD VI GJORDE:
+----------------------------------------------------------------
+
+Usama implementerade veckorapporten på två sätt:
+  - GET /ui/reports/weekly  -> HTML-sida med formulär och tabell
+  - GET /reports/weekly     -> JSON-API (testbar via Swagger)
+
+Logiken är densamma för båda: man väljer en användare och
+anger ett startdatum (en måndag), och systemet hämtar alla
+aktiviteter inom den veckan (startdatum + 6 dagar) och
+summerar CO2e.
+
+Usama skapade seed_data.py med 10 emissionsfaktorer i
+3 kategorier som importeras till databasen:
+
+  Transport:
+    bil         0.21  kg CO2e/km
+    buss        0.089 kg CO2e/km
+    tåg         0.014 kg CO2e/km
+    flyg        0.255 kg CO2e/km
+
+  Mat:
+    nötkött    26.5  kg CO2e/kg
+    kyckling    5.7  kg CO2e/kg
+    vegetarisk  2.0  kg CO2e/kg
+
+  Energi:
+    el          0.015 kg CO2e/kWh
+    naturgas    0.2   kg CO2e/kWh
+    fjärrvärme  0.066 kg CO2e/kWh
+
+Fani skapade templates/weekly.html med:
+  - Formulär för att välja användare och startdatum
+  - Totalsiffra för veckan
+  - Tabell med alla aktiviteter och deras CO2e-bidrag
+  - Procentandel per aktivitet
+
+Vi körde också seed_data.py och testade hela flödet manuellt
+i webbläsaren: skapade användare, loggade aktiviteter och
+kollade veckorapporten. Allt funkade!
+
+----------------------------------------------------------------
+PROBLEM:
+----------------------------------------------------------------
+
+Inga större problem idag. Seed-skriptet krävde lite justeringar
+för att vara idempotent, men det var snabbt fixat.
+
+----------------------------------------------------------------
+BESLUT:
+----------------------------------------------------------------
+
+Beslut: seed_data.py som separat skript (idempotent)
+Vi bestämde oss för att hålla seed-logiken i ett eget skript
+utanför main.py. Det är tryggt att köra om - om emissionsfaktorer
+redan finns i databasen hoppar skriptet över dem. På så sätt
+kan vi köra det så många gånger vi vill utan att få duplikat.
+
+Usama lade även till automatisk seed i on_startup()-funktionen
+i main.py: om databasen är tom när servern startar, körs seed
+automatiskt. Bekvämare för alla.
+
+
+================================================================
+  DAG 5 - 2026-05-25 (Måndag): Testsprint och slutavstämning
+================================================================
+
+Sista dagen före redovisning. Fokus: få alla automatiserade
+tester gröna och städa upp koden. Usama tog huvudansvaret
+för tester, medan Fani polerade CSS och navigationen.
+
+----------------------------------------------------------------
+VAD VI GJORDE:
+----------------------------------------------------------------
+
+Usama skapade tests/conftest.py som sätter upp en in-memory
+SQLite-databas enbart för testmiljön. Den använder sig av
+SQLAlchemys dependency-override så att tester aldrig rör
+produktionsdatabasen (app.db).
+
+Vi delade upp testfilerna:
+  - test_users.py      - 8 tester (Usama och Fani gemensamt)
+  - test_activities.py - 8 tester (Usama hade huvudansvar)
+  - test_reports.py    - 11 tester (Usama hade huvudansvar)
+
+Fani polerade static/styles.css med konsekventare spacing,
+förbättrade knappstilar och såg till att navigationen ser
+bra ut på smalare skärmar.
+
+Vi gick igenom hela applikationen manuellt en sista gång
+och jämnade koden. Satte ihop instruktioner för hur man
+startar projektet.
+
+----------------------------------------------------------------
+PROBLEM:
+----------------------------------------------------------------
+
+Problem: "no such table: users" i tester (den stora utmaningen)
+När Usama körde pytest för första gången fick vi felet
+"no such table: users". Frustrerande eftersom databasen
+borde skapas automatiskt av conftest.py.
+
+Vad som hände: conftest.py sände upp en in-memory SQLite-
+databas och skapade tabellerna. Men varje ny HTTP-request
+via TestClient öppnade en ny anslutning till SQLite. Eftersom
+in-memory-databaser bara lever så länge anslutningen är aktiv
+försvann tabellerna mellan requestsen. Från testets perspektiv
+fanns tabellerna aldrig.
+
+Lösning: Usama löste det genom att använda ett explicit
+connection-objekt som hålls öppet under hela testets livstid.
+Det binds till SessionLocal via SQLAlchemys bind-parameter
+så att alla requests i ett test delar samma anslutning och
+därmed samma in-memory-databas.
+
+Det tog ungefär en timme att lista ut, men nu går det fint!
+
+----------------------------------------------------------------
+TESTRESULTAT - SLUTLIGA:
+----------------------------------------------------------------
+
+Vi körde: python -m pytest tests/ -v
+
+Resultat: 27 passed in 0.79s
+
+Alla 27 tester gröna! Vi är nöjda med täckningen:
+  - Skapa användare (validering av namn, email, dubbletter)
+  - Ta bort användare (kaskad-radering av aktiviteter)
+  - Logga aktiviteter (korrekt CO2e-beräkning)
+  - Veckorapport (summering, datumgränser, API-format)
+
+
+================================================================
+  SUMMERING AV PROBLEMEN VI STOTT PÅ
+================================================================
+
+Problem 1 (Dag 5): "no such table: users" i pytest
+  -> Lösning: Explicit connection-objekt i conftest.py som
+     hålls öppet under hela testets livstid.
+
+Problem 2 (Dag 2): UnicodeEncodeError i seed_data.py (Fani)
+  -> Lösning: Bytte emoji mot ASCII-text [OK]/[FEL] i print().
+
+Problem 3 (Dag 2): DeprecationWarning i TemplateResponse
+  -> Lösning: Bytte ordning på parametrar (request först).
+
+Problem 4 (Dag 1): Servern startade inte från rätt katalog
+  -> Lösning: Köra alltid från projektmappen med
+     python -m uvicorn app.main:app --reload
+
+
+================================================================
+  SUMMERING AV BESLUT VI TAGIT
+================================================================
+
+Beslut 1 (Dag 3): CO2e beräknas och sparas direkt i Activity.
+Beslut 2 (Dag 1): base.html med Jinja2 extends (DRY-principen).
+Beslut 3 (Dag 1): Separat in-memory-databas för tester.
+Beslut 4 (Dag 4): seed_data.py som eget, idempotent skript.
+Beslut 5 (Dag 1): Email-fält på User-modellen.
+Beslut 6 (Dag 2): Post-Redirect-Get (PRG) i alla formulär.
+Beslut 7 (Dag 3): /api/emission-factors för dynamiska dropdowns.
+
+
+================================================================
+  HUR MAN KÖR PROJEKTET
+================================================================
+
+1. Installera beroenden:
+   pip install -r requirements.txt
+
+2. Starta servern (från projektmappen):
+   python -m uvicorn app.main:app --reload
+
+3. Öppna i webbläsaren:
+   http://localhost:8000                 -> Startsida
+   http://localhost:8000/ui/users          -> Användare
+   http://localhost:8000/ui/activities     -> Aktiviteter
+   http://localhost:8000/ui/reports/weekly -> Veckorapport
+   http://localhost:8000/docs              -> Swagger API-docs
+
+4. Kör tester:
+   python -m pytest tests/ -v
+
+
+================================================================
+
+Loggen uppdaterades sista gången: 2026-05-25
+
+================================================================

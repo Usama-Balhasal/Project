@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+{% block title %}Aktiviteter – Hållbarhetskollen{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📋 Logga aktivitet</h1>
+  <p>Välj en användare, ange aktivitet och spara för att beräkna CO₂e-påverkan.</p>
+</div>
+
+<!-- Statusmeddelanden -->
+{% if ok %}
+<div class="alert alert-success" role="alert">✅ {{ ok }}</div>
+{% endif %}
+{% if err %}
+<div class="alert alert-error" role="alert">❌ {{ err }}</div>
+{% endif %}
+
+<!-- Formulär: Logga aktivitet -->
+<div class="card">
+  <div class="card__title">➕ Ny aktivitet</div>
+
+  {% if users %}
+  <form method="post" action="/ui/activities" id="form-log-activity" novalidate>
+    <div class="form-grid">
+
+      <!-- Välj användare -->
+      <div class="form-group">
+        <label for="user_id">Användare *</label>
+        <select id="user_id" name="user_id" required>
+          <option value="">-- Välj användare --</option>
+          {% for user in users %}
+          <option value="{{ user.id }}"
+            {% if selected_user and selected_user.id == user.id %}selected{% endif %}>
+            {{ user.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Kategori (VG: fylls med data från DB via JS) -->
+      <div class="form-group">
+        <label for="category">Kategori *</label>
+        <select id="category" name="category" required>
+          <option value="">-- Välj kategori --</option>
+          {% for cat in categories %}
+          <option value="{{ cat }}">
+            {% if cat == "transport" %}🚗 Transport
+            {% elif cat == "mat" %}🥩 Mat
+            {% elif cat == "energi" %}⚡ Energi
+            {% else %}{{ cat }}{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Nyckel/aktivitet (VG: uppdateras dynamiskt baserat på kategori) -->
+      <div class="form-group">
+        <label for="key">Aktivitet *</label>
+        <select id="key" name="key" required>
+          <option value="">-- Välj kategori först --</option>
+        </select>
+      </div>
+
+      <!-- Mängd -->
+      <div class="form-group">
+        <label for="amount">Mängd * <span id="unit-hint" style="font-weight:400; color:var(--color-text-light); text-transform:none;">(välj aktivitet)</span></label>
+        <input
+          type="number"
+          id="amount"
+          name="amount"
+          placeholder="T.ex. 15"
+          min="0.001"
+          step="any"
+          required
+        />
+      </div>
+
+      <!-- Datum -->
+      <div class="form-group">
+        <label for="date_str">Datum *</label>
+        <input
+          type="date"
+          id="date_str"
+          name="date_str"
+          value="{{ today }}"
+          required
+          max="{{ today }}"
+        />
+      </div>
+
+      <!-- CO₂e-förhandsgranskning (VG) -->
+      <div class="form-group">
+        <label>Uppskattad CO₂e</label>
+        <div id="co2e-preview"
+             style="padding:.65rem .9rem; background:var(--color-surface-alt); border-radius:var(--border-radius); border:1.5px solid #c5ddd0; font-weight:600; color:var(--color-primary-dark); min-height:2.5rem; display:flex; align-items:center;">
+          —
+        </div>
+      </div>
+
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary" id="btn-save-activity">
+      💾 Spara aktivitet
+    </button>
+  </form>
+  {% else %}
+  <div class="alert alert-warning">
+    ⚠️ Inga användare finns. <a href="/ui/users" style="color:inherit; font-weight:700;">Skapa en användare</a> innan du loggar aktiviteter.
+  </div>
+  {% endif %}
+</div>
+
+<!-- Välj användare att visa aktiviteter för -->
+<div class="card">
+  <div class="card__title">🔍 Filtrera aktiviteter</div>
+  <form method="get" action="/ui/activities" id="form-filter" style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+    <div class="form-group" style="flex:1; min-width:180px;">
+      <label for="filter-user">Visa aktiviteter för</label>
+      <select id="filter-user" name="user_id">
+        <option value="">-- Alla / välj användare --</option>
+        {% for user in users %}
+        <option value="{{ user.id }}"
+          {% if selected_user and selected_user.id == user.id %}selected{% endif %}>
+          {{ user.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary" id="btn-filter">🔍 Visa</button>
+  </form>
+</div>
+
+<!-- Aktivitetslista -->
+<div class="card">
+  <div class="card__title">
+    📋 Aktiviteter
+    {% if selected_user %}– {{ selected_user.name }}{% endif %}
+    ({{ activities | length }})
+  </div>
+
+  {% if activities %}
+  <div class="table-wrapper">
+    <table id="activities-table">
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Kategori</th>
+          <th>Aktivitet</th>
+          <th>Mängd</th>
+          <th>CO₂e (kg)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for act in activities %}
+        <tr>
+          <td>{{ act.date }}</td>
+          <td>
+            {% if act.category == "transport" %}🚗
+            {% elif act.category == "mat" %}🥩
+            {% elif act.category == "energi" %}⚡
+            {% endif %}
+            {{ act.category | capitalize }}
+          </td>
+          <td>{{ act.key | capitalize }}</td>
+          <td>{{ act.amount }}</td>
+          <td>
+            {% if act.co2e > 5 %}
+            <span class="badge badge-red">{{ "%.2f"|format(act.co2e) }}</span>
+            {% elif act.co2e > 1 %}
+            <span class="badge badge-yellow">{{ "%.2f"|format(act.co2e) }}</span>
+            {% else %}
+            <span class="badge badge-green">{{ "%.2f"|format(act.co2e) }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:700; background:var(--color-surface-alt);">
+          <td colspan="4" style="padding:.75rem 1rem;">Totalt</td>
+          <td style="padding:.75rem 1rem;">
+            {{ "%.2f"|format(activities | sum(attribute='co2e')) }} kg CO₂e
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  {% elif selected_user %}
+  <div class="empty-state">
+    <div class="empty-state__icon">📋</div>
+    <p>{{ selected_user.name }} har inga loggade aktiviteter ännu.</p>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state__icon">📋</div>
+    <p>Välj en användare ovan för att se aktiviteter.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /*
+   * VG-feature: Dynamiska dropdowns
+   * När användaren väljer kategori uppdateras "aktivitet"-dropdownen
+   * med relevanta nycklar från DB (via API /api/emission-factors).
+   * Visar också enhet och CO₂e-förhandsgranskning i realtid.
+   */
+
+  // Hämta alla emissionsfaktorer från API vid sidladdning
+  let emissionFactors = {};
+
+  fetch('/api/emission-factors')
+    .then(r => r.json())
+    .then(data => {
+      emissionFactors = data;
+    })
+    .catch(() => {
+      // Fallback: visa felmeddelande om API inte svarar
+      console.warn('Kunde inte hämta emissionsfaktorer från API.');
+    });
+
+  const categorySelect = document.getElementById('category');
+  const keySelect      = document.getElementById('key');
+  const amountInput    = document.getElementById('amount');
+  const unitHint       = document.getElementById('unit-hint');
+  const co2ePreview    = document.getElementById('co2e-preview');
+
+  // Uppdatera nyckel-dropdown när kategori väljs
+  categorySelect.addEventListener('change', function() {
+    const cat = this.value;
+    keySelect.innerHTML = '<option value="">-- Välj aktivitet --</option>';
+    unitHint.textContent = '(välj aktivitet)';
+    co2ePreview.textContent = '—';
+
+    if (cat && emissionFactors[cat]) {
+      emissionFactors[cat].forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.key;
+        opt.textContent = item.key.charAt(0).toUpperCase() + item.key.slice(1) + ' (' + item.unit + ')';
+        opt.dataset.unit   = item.unit;
+        opt.dataset.factor = item.factor;
+        keySelect.appendChild(opt);
+      });
+    }
+  });
+
+  // Visa enhet och uppdatera CO₂e-preview när aktivitet väljs
+  keySelect.addEventListener('change', updatePreview);
+  amountInput.addEventListener('input', updatePreview);
+
+  function updatePreview() {
+    const selectedOpt = keySelect.options[keySelect.selectedIndex];
+    if (!selectedOpt || !selectedOpt.dataset.factor) {
+      unitHint.textContent = '(välj aktivitet)';
+      co2ePreview.textContent = '—';
+      return;
+    }
+
+    const unit   = selectedOpt.dataset.unit;
+    const factor = parseFloat(selectedOpt.dataset.factor);
+    const amount = parseFloat(amountInput.value);
+
+    unitHint.textContent = unit ? `(${unit})` : '';
+
+    if (!isNaN(amount) && amount > 0) {
+      const co2e = (amount * factor).toFixed(2);
+      co2ePreview.textContent = co2e + ' kg CO₂e';
+      co2ePreview.style.color = co2e > 5 ? 'var(--color-error)' : co2e > 1 ? 'var(--color-warning)' : 'var(--color-success)';
+    } else {
+      co2ePreview.textContent = '—';
+      co2ePreview.style.color = 'var(--color-primary-dark)';
+    }
+  }
+
+  // Klientvalidering vid formulärskick
+  document.getElementById('form-log-activity')?.addEventListener('submit', function(e) {
+    const userId   = document.getElementById('user_id').value;
+    const category = document.getElementById('category').value;
+    const key      = document.getElementById('key').value;
+    const amount   = parseFloat(document.getElementById('amount').value);
+    const dateStr  = document.getElementById('date_str').value;
+
+    if (!userId) { e.preventDefault(); alert('Välj en användare.'); return; }
+    if (!category) { e.preventDefault(); alert('Välj en kategori.'); return; }
+    if (!key) { e.preventDefault(); alert('Välj en aktivitet.'); return; }
+    if (isNaN(amount) || amount <= 0) { e.preventDefault(); alert('Ange en mängd större än 0.'); return; }
+    if (!dateStr) { e.preventDefault(); alert('Ange ett datum.'); return; }
+  });
+</script>
+{% endblock %}
