@@ -9,50 +9,59 @@
 /* ─── CSS-variabler (design tokens) ────────────────────────────────────────── */
 :root {
   /* Primärfärger – naturgrön palett */
-  --color-primary:       #2d7a4f;
+  --color-primary: #2d7a4f;
   --color-primary-light: #3a9e68;
-  --color-primary-dark:  #1d5235;
-  --color-accent:        #5ec28a;
+  --color-primary-dark: #1d5235;
+  --color-accent: #5ec28a;
 
   /* Bakgrunds- och ytfärger */
-  --color-bg:            #f0f7f4;
-  --color-surface:       #ffffff;
-  --color-surface-alt:   #e8f5ee;
+  --color-bg: #f0f7f4;
+  --color-surface: #ffffff;
+  --color-surface-alt: #e8f5ee;
 
   /* Text */
-  --color-text:          #1a2e24;
-  --color-text-muted:    #5a7a6a;
-  --color-text-light:    #8aab99;
+  --color-text: #1a2e24;
+  --color-text-muted: #5a7a6a;
+  --color-text-light: #8aab99;
 
   /* Status */
-  --color-success:       #2d7a4f;
-  --color-success-bg:    #e6f4ec;
-  --color-error:         #c0392b;
-  --color-error-bg:      #fdf0ee;
-  --color-warning:       #d4a017;
-  --color-warning-bg:    #fdf8e1;
+  --color-success: #2d7a4f;
+  --color-success-bg: #e6f4ec;
+  --color-error: #c0392b;
+  --color-error-bg: #fdf0ee;
+  --color-warning: #d4a017;
+  --color-warning-bg: #fdf8e1;
 
   /* Navigation */
-  --color-nav-bg:        #1d5235;
-  --color-nav-text:      #d4ede1;
-  --color-nav-hover:     #2d7a4f;
+  --color-nav-bg: #1d5235;
+  --color-nav-text: #d4ede1;
+  --color-nav-hover: #2d7a4f;
 
   /* Layout */
-  --border-radius:       10px;
-  --border-radius-lg:    16px;
-  --shadow-sm:           0 1px 3px rgba(0,0,0,.10);
-  --shadow-md:           0 4px 16px rgba(0,0,0,.10);
-  --shadow-lg:           0 8px 32px rgba(0,0,0,.12);
-  --transition:          0.2s ease;
+  --border-radius: 10px;
+  --border-radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .10);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .10);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, .12);
+  --transition: 0.2s ease;
 
   /* Typografi */
-  --font:                'Inter', system-ui, sans-serif;
+  --font: 'Inter', system-ui, sans-serif;
 }
 
 /* ─── Reset & bas ───────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-html { font-size: 16px; scroll-behavior: smooth; }
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: var(--font);
@@ -202,10 +211,12 @@ textarea {
   -webkit-appearance: none;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(45,122,79,.15);
+  box-shadow: 0 0 0 3px rgba(45, 122, 79, .15);
 }
 
 select {
@@ -232,14 +243,20 @@ select {
   transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
 }
 
-.btn:active { transform: scale(.97); }
+.btn:active {
+  transform: scale(.97);
+}
 
 .btn-primary {
   background: var(--color-primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(45,122,79,.30);
+  box-shadow: 0 2px 8px rgba(45, 122, 79, .30);
 }
-.btn-primary:hover { background: var(--color-primary-light); box-shadow: 0 4px 14px rgba(45,122,79,.35); }
+
+.btn-primary:hover {
+  background: var(--color-primary-light);
+  box-shadow: 0 4px 14px rgba(45, 122, 79, .35);
+}
 
 .btn-danger {
   background: var(--color-error);
@@ -247,16 +264,25 @@ select {
   padding: .4rem .85rem;
   font-size: .82rem;
 }
-.btn-danger:hover { background: #a93226; }
+
+.btn-danger:hover {
+  background: #a93226;
+}
 
 .btn-secondary {
   background: var(--color-surface-alt);
   color: var(--color-primary-dark);
   border: 1.5px solid #c5ddd0;
 }
-.btn-secondary:hover { background: #d0eadb; }
 
-.btn-sm { padding: .35rem .8rem; font-size: .82rem; }
+.btn-secondary:hover {
+  background: #d0eadb;
+}
+
+.btn-sm {
+  padding: .35rem .8rem;
+  font-size: .82rem;
+}
 
 /* ─── Tabeller ──────────────────────────────────────────────────────────────── */
 .table-wrapper {
@@ -290,8 +316,13 @@ tbody tr {
   transition: background var(--transition);
 }
 
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: var(--color-surface-alt); }
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: var(--color-surface-alt);
+}
 
 tbody td {
   padding: .75rem 1rem;
@@ -312,8 +343,15 @@ tbody td {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .alert-success {
@@ -343,9 +381,20 @@ tbody td {
   font-weight: 600;
 }
 
-.badge-green  { background: var(--color-success-bg); color: var(--color-success); }
-.badge-yellow { background: var(--color-warning-bg); color: #a07800; }
-.badge-red    { background: var(--color-error-bg);   color: var(--color-error); }
+.badge-green {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge-yellow {
+  background: var(--color-warning-bg);
+  color: #a07800;
+}
+
+.badge-red {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
 
 /* ─── Startsida – hero ──────────────────────────────────────────────────────── */
 .hero {
@@ -358,12 +407,35 @@ tbody td {
   box-shadow: var(--shadow-lg);
 }
 
-.hero__icon { font-size: 4rem; margin-bottom: 1rem; }
-.hero h1 { font-size: 2.4rem; font-weight: 700; margin-bottom: .7rem; }
-.hero p  { font-size: 1.1rem; opacity: .9; max-width: 520px; margin: 0 auto 1.8rem; }
+.hero__icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
 
-.hero__actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-.hero__actions .btn { padding: .75rem 1.8rem; font-size: 1rem; }
+.hero h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: .7rem;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  opacity: .9;
+  max-width: 520px;
+  margin: 0 auto 1.8rem;
+}
+
+.hero__actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hero__actions .btn {
+  padding: .75rem 1.8rem;
+  font-size: 1rem;
+}
 
 /* ─── Statistik-kort (startsida) ─────────────────────────────────────────────── */
 .stats-grid {
@@ -383,10 +455,27 @@ tbody td {
   transition: transform var(--transition), box-shadow var(--transition);
 }
 
-.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.stat-card__icon { font-size: 2rem; margin-bottom: .5rem; }
-.stat-card__value { font-size: 1.8rem; font-weight: 700; color: var(--color-primary-dark); }
-.stat-card__label { font-size: .85rem; color: var(--color-text-muted); margin-top: .2rem; }
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card__icon {
+  font-size: 2rem;
+  margin-bottom: .5rem;
+}
+
+.stat-card__value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.stat-card__label {
+  font-size: .85rem;
+  color: var(--color-text-muted);
+  margin-top: .2rem;
+}
 
 /* ─── Rapport-total-box ──────────────────────────────────────────────────────── */
 .report-total {
@@ -427,28 +516,64 @@ tbody td {
   color: var(--color-text-muted);
 }
 
-.empty-state__icon { font-size: 3rem; margin-bottom: .8rem; opacity: .5; }
-.empty-state p { font-size: .95rem; }
+.empty-state__icon {
+  font-size: 3rem;
+  margin-bottom: .8rem;
+  opacity: .5;
+}
+
+.empty-state p {
+  font-size: .95rem;
+}
 
 /* ─── Responsivitet ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .navbar { padding: 0 1rem; height: 56px; }
-  .navbar__brand { font-size: 1rem; }
-  .navbar__links a { padding: .4rem .6rem; font-size: .83rem; }
-  .container { padding: 0 1rem; margin: 1.5rem auto; }
-  .card { padding: 1.2rem; }
-  .hero h1 { font-size: 1.7rem; }
-  .form-grid { grid-template-columns: 1fr; }
+  .navbar {
+    padding: 0 1rem;
+    height: 56px;
+  }
+
+  .navbar__brand {
+    font-size: 1rem;
+  }
+
+  .navbar__links a {
+    padding: .4rem .6rem;
+    font-size: .83rem;
+  }
+
+  .container {
+    padding: 0 1rem;
+    margin: 1.5rem auto;
+  }
+
+  .card {
+    padding: 1.2rem;
+  }
+
+  .hero h1 {
+    font-size: 1.7rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ─── Loader spinner (för AJAX) ─────────────────────────────────────────────── */
 .spinner {
   display: inline-block;
-  width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.4);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, .4);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin .6s linear infinite;
   vertical-align: middle;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

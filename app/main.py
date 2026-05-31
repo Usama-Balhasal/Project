@@ -4,6 +4,7 @@
 # API-routes returnerar JSON och dokumenteras automatiskt i /docs (Swagger).
 
 import datetime as dt
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -18,21 +19,8 @@ from app.schemas import WeeklyReportOut, ActivityOut
 
 # ─── App-initialisering ──────────────────────────────────────────────────────
 
-app = FastAPI(
-    title="Hållbarhetskollen",
-    description="Logga vardagsaktiviteter och se din CO₂e-påverkan per vecka.",
-    version="1.0.0",
-)
-
-# Servar statiska filer (CSS, bilder) från mappen /static
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Jinja2-templates läses från mappen /templates
-templates = Jinja2Templates(directory="templates")
-
-
-@app.on_event("startup")
-def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """
     Körs automatiskt när servern startar.
     Skapar tabeller om de inte finns och kör seed om DB är tom.
@@ -52,6 +40,22 @@ def on_startup():
             db.close()
     except Exception:
         db.close()
+
+    yield  # Applikationen körs här
+
+
+app = FastAPI(
+    title="Hållbarhetskollen",
+    description="Logga vardagsaktiviteter och se din CO₂e-påverkan per vecka.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# Servar statiska filer (CSS, bilder) från mappen /static
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Jinja2-templates läses från mappen /templates
+templates = Jinja2Templates(directory="templates")
 
 
 # ─── Startsida ───────────────────────────────────────────────────────────────

@@ -22,28 +22,13 @@
     <div class="form-grid">
       <div class="form-group">
         <label for="name">Namn *</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder="T.ex. Anna Svensson"
-          required
-          minlength="1"
-          maxlength="100"
-          autocomplete="name"
-        />
+        <input type="text" id="name" name="name" placeholder="T.ex. Anna Svensson" required minlength="1"
+          maxlength="100" autocomplete="name" />
       </div>
       <div class="form-group">
         <label for="email">E-postadress *</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="T.ex. anna@exempel.se"
-          required
-          maxlength="200"
-          autocomplete="email"
-        />
+        <input type="email" id="email" name="email" placeholder="T.ex. anna@exempel.se" required maxlength="200"
+          autocomplete="email" />
       </div>
     </div>
     <br>
@@ -76,18 +61,14 @@
           <td>{{ user.email }}</td>
           <td>
             <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
-              <a href="/ui/activities?user_id={{ user.id }}"
-                 class="btn btn-secondary btn-sm"
-                 id="btn-activities-{{ user.id }}">
+              <a href="/ui/activities?user_id={{ user.id }}" class="btn btn-secondary btn-sm"
+                id="btn-activities-{{ user.id }}">
                 📋 Aktiviteter
               </a>
-              <form method="post"
-                    action="/ui/users/{{ user.id }}/delete"
-                    onsubmit="return confirm('Ta bort {{ user.name }}? Alla aktiviteter raderas också.');"
-                    style="display:inline;">
-                <button type="submit"
-                        class="btn btn-danger btn-sm"
-                        id="btn-delete-{{ user.id }}">
+              <form method="post" action="/ui/users/{{ user.id }}/delete"
+                onsubmit="return confirm('Ta bort {{ user.name }}? Alla aktiviteter raderas också.');"
+                style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm" id="btn-delete-{{ user.id }}">
                   🗑 Ta bort
                 </button>
               </form>
@@ -110,7 +91,7 @@
 {% block scripts %}
 <script>
   /* Klientvalidering: hindrar tomma formulär från att skickas */
-  document.getElementById('form-create-user').addEventListener('submit', function(e) {
+  document.getElementById('form-create-user').addEventListener('submit', function (e) {
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     if (!name) {

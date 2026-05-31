@@ -13,7 +13,7 @@
 |------|-------------|----------------------------|
 | **Usama Balhasal** | Backend-utvecklare | Ansvarig för backend: API, routes, databas (SQLite + SQLAlchemy) samt kvalitetssäkring (pytest). |
 | **Fani Hagos** | Frontend-utvecklare | Ansvarig för frontend: Gränssnitt (UI), server-renderad HTML (Jinja2-templates) samt layout och design (CSS). |
-| **Lucas Forsling** | Scrum Master & Utvecklare | Ansvarig för Scrum-processen (sprintplanering, mötesstruktur) samt delaktig i systemutveckling och slutrapport. |
+| **Lukas Forsling** | Scrum Master & Utvecklare | Ansvarig för Scrum-processen (sprintplanering, mötesstruktur) samt delaktig i systemutveckling och slutrapport. |
 | **Nicklas Eriksson** | Product Owner & Utvecklare | Ansvarig för kravuppfyllnad (G/VG-kriterier), PowerPoint-presentation samt delaktig i systemutveckling och slutrapport. |
 
 ---
