@@ -85,8 +85,8 @@ hållbarhetskollen/
 ### 1. Klona repot
 
 ```bash
-git clone https://github.com/Usama-Balhasal/hallbarhetskollen.git
-cd hallbarhetskollen
+git clone https://github.com/Usama-Balhasal/Project
+cd Project
 ```
 
 ### 2. Installera beroenden
